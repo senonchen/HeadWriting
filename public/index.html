@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 奇妙学习乐园</title>
+    <style>
+        :root { --bg: #f0f2f5; --primary: #4a90e2; --text: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: var(--primary); margin-bottom: 40px; }
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; width: 100%; max-width: 800px; }
+        .game-card { background: white; border-radius: 15px; padding: 30px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s; cursor: pointer; text-decoration: none; color: var(--text); display: block; }
+        .game-card:hover { transform: translateY(-10px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .game-icon { font-size: 4em; margin-bottom: 20px; display: block; }
+        .game-title { font-size: 1.5em; font-weight: bold; margin-bottom: 10px; }
+        .game-desc { color: #666; }
+    </style>
+</head>
+<body>
+    <h1>🎮 奇妙学习乐园</h1>
+    <div class="game-grid">
+        <a href="/games/handwriting/index.html" class="game-card">
+            <span class="game-icon">✍️</span>
+            <div class="game-title">手写汉字大师</div>
+            <div class="game-desc">拿起你的神笔，挑战书写最美的汉字！</div>
+        </a>
+        
+        </div>
+</body>
+</html>

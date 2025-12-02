@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 汉字配置编辑器</title>
+    <style>
+        body { font-family: sans-serif; padding: 30px; background: #f4f4f9; color: #333; max-width: 800px; margin: 0 auto; }
+        h1, h2 { color: #444; }
+        .editor-box, .list-box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        textarea { height: 100px; }
+        button { background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        button:hover { background: #218838; }
+        .del-btn { background: #dc3545; padding: 8px 15px; font-size: 14px; margin-left: auto; }
+        .del-btn:hover { background: #c82333; }
+        .episode-item { background: #fff; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; align-items: center; }
+        .episode-info { flex-grow: 1; }
+        .episode-title { font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
+        .episode-chars { color: #666; font-size: 0.9em; }
+        .nav-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <a href="/" class="nav-link">← 返回首页</a>
+    <h1>📝 汉字小游戏 - 配置编辑器</h1>
+
+    <div class="editor-box">
+        <h2>➕ 添加新一集</h2>
+        <label>集数标题 (例如: 第三集：动物世界)</label>
+        <input type="text" id="newTitle" placeholder="输入标题...">
+        
+        <label>汉字列表 (用逗号或空格隔开，例如: 猫 狗 鸟 鱼)</label>
+        <textarea id="newChars" placeholder="在这里输入要练习的汉字..."></textarea>
+        
+        <button onclick="addNewEpisode()">保存添加</button>
+    </div>
+
+    <div class="list-box">
+        <h2>📺 现有集数列表</h2>
+        <div id="episodeList">加载中...</div>
+    </div>
+
+    <script>
+        const API_URL = '/api/handwriting-data';
+        let episodesData = [];
+
+        // 加载数据
+        async function loadData() {
+            const res = await fetch(API_URL);
+            episodesData = await res.json();
+            renderList();
+        }
+
+        // 渲染列表
+        function renderList() {
+            const container = document.getElementById('episodeList');
+            container.innerHTML = '';
+            episodesData.forEach((ep, index) => {
+                const div = document.createElement('div');
+                div.className = 'episode-item';
+                div.innerHTML = `
+                    <div class="episode-info">
+                        <div class="episode-title">${ep.title}</div>
+                        <div class="episode-chars">包含汉字: ${ep.characters.join('，')}</div>
+                    </div>
+                    <button class="del-btn" onclick="deleteEpisode(${index})">删除</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 添加新集
+        async function addNewEpisode() {
+            const titleInput = document.getElementById('newTitle');
+            const charsInput = document.getElementById('newChars');
+            const title = titleInput.value.trim();
+            // 将输入的字符串按空格或逗号分割成数组，并过滤掉空项
+            const charsStr = charsInput.value.trim();
+            if (!title || !charsStr) return alert("请填写完整信息");
+
+            const charArray = charsStr.split(/[,，\s]+/).filter(c => c.length > 0);
+            
+            if (charArray.length === 0) return alert("至少输入一个汉字");
+
+            episodesData.push({
+                id: Date.now(), // 用时间戳做唯一ID
+                title: title,
+                characters: charArray
+            });
+
+            await saveData();
+            titleInput.value = '';
+            charsInput.value = '';
+        }
+
+        // 删除集
+        async function deleteEpisode(index) {
+            if(confirm('确定要删除这一集吗？')) {
+                episodesData.splice(index, 1);
+                await saveData();
+            }
+        }
+
+        // 保存到服务器
+        async function saveData() {
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(episodesData)
+            });
+            renderList();
+            alert("保存成功！");
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

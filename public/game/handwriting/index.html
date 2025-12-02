@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>✍️ 手写汉字大师</title>
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eef2f7; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; color: #333; }
+        .header-nav { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-link { text-decoration: none; color: #666; font-size: 0.9em; }
+        select { padding: 10px 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; background: white; max-width: 70%; }
+        
+        /* 游戏主区域 */
+        .game-container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 500px; }
+        #target-char-display { font-size: 2em; margin-bottom: 10px; color: #555; height: 1.2em; }
+        
+        /* 汉字书写格区域 */
+        #character-target-div { 
+            width: 300px; height: 300px; margin: 0 auto 30px auto; 
+            border: 3px dashed #ddd; /* 米字格边框 */
+            background-image: 
+                linear-gradient(45deg, transparent 49.5%, #eee 49.5%, #eee 50.5%, transparent 50.5%),
+                linear-gradient(-45deg, transparent 49.5%, #eee 49.5%, #eee 50.5%, transparent 50.5%),
+                linear-gradient(0deg, transparent 49.5%, #eee 49.5%, #eee 50.5%, transparent 50.5%),
+                linear-gradient(90deg, transparent 49.5%, #eee 49.5%, #eee 50.5%, transparent 50.5%);
+            background-size: 100% 100%;
+            border-radius: 12px;
+            cursor: crosshair; /* 鼠标变成十字准星 */
+        }
+
+        /* 按钮组 */
+        .controls { display: flex; gap: 15px; justify-content: center; }
+        button { padding: 12px 24px; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        #retry-btn { background: #f0ad4e; color: white; }
+        #next-btn { background: #4a90e2; color: white; }
+        button:hover { opacity: 0.9; transform: scale(1.05); }
+        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+        /* 状态提示 */
+        #status-msg { height: 30px; margin-top: 15px; color: #28a745; font-weight: bold; }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+    </style>
+</head>
+<body>
+    <div class="header-nav">
+        <a href="/" class="back-link">← 回到大厅</a>
+        <select id="episode-select" onchange="changeEpisode()">
+            <option value="">加载中...</option>
+        </select>
+    </div>
+
+    <div class="game-container">
+        <div id="target-char-display">准备开始...</div>
+        <div id="character-target-div"></div>
+        
+        <div class="controls">
+            <button id="retry-btn" onclick="retryChar()">🔄 重写</button>
+            <button id="next-btn" onclick="nextChar()" disabled>下一字 ➡️</button>
+        </div>
+        <div id="status-msg"></div>
+    </div>
+
+    <script>
+        const API_URL = '/api/handwriting-data';
+        let episodes = [];
+        let currentEpisodeData = null;
+        let currentCharIndex = 0;
+        let writer = null; // HanziWriter 实例
+
+        // 1. 初始化加载数据
+        async function init() {
+            const res = await fetch(API_URL);
+            episodes = await res.json();
+            const select = document.getElementById('episode-select');
+            select.innerHTML = '';
+            episodes.forEach((ep, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = ep.title;
+                select.appendChild(option);
+            });
+            // 默认加载第一集
+            if (episodes.length > 0) {
+                loadEpisode(0);
+            }
+        }
+
+        // 2. 切换集数
+        function changeEpisode() {
+            const index = document.getElementById('episode-select').value;
+            loadEpisode(index);
+        }
+
+        // 3. 加载某一集的数据
+        function loadEpisode(index) {
+            currentEpisodeData = episodes[index];
+            currentCharIndex = 0;
+            loadCharacter();
+            document.getElementById('next-btn').disabled = true;
+            document.getElementById('status-msg').innerText = '';
+        }
+
+        // 4. 加载当前汉字到画布
+        function loadCharacter() {
+            if (!currentEpisodeData || currentCharIndex >= currentEpisodeData.characters.length) {
+                showFinish();
+                return;
+            }
+            
+            const char = currentEpisodeData.characters[currentCharIndex];
+            document.getElementById('target-char-display').innerText = `当前练习：${char} (${currentCharIndex + 1}/${currentEpisodeData.characters.length})`;
+            document.getElementById('character-target-div').innerHTML = ''; // 清空旧的
+            document.getElementById('status-msg').innerText = '';
+            document.getElementById('next-btn').disabled = true;
+
+            // --- Hanzi Writer 核心配置 ---
+            writer = HanziWriter.create('character-target-div', char, {
+                width: 300,
+                height: 300,
+                padding: 20,
+                showOutline: true, // 显示轮廓提示
+                strokeAnimationSpeed: 1, // 笔画提示速度
+                delayBetweenStrokes: 200, // 提示间隔
+                strokeColor: '#333', // 书写颜色
+                radicalColor: '#4a90e2', // 部首颜色（如果支持）
+                outlineColor: '#ddd', // 轮廓颜色
+                drawingWidth: 20, // 笔触粗细
+                showHintAfterMisses: 1, // 写错1次后显示提示
+                highlightOnComplete: true // 完成后高亮
+            });
+
+            // 启动测验模式
+            startQuiz();
+        }
+
+        // 5. 开始书写测验
+        function startQuiz() {
+            writer.quiz({
+                onMistake: function(strokeData) {
+                    console.log('写错了笔画!');
+                    document.getElementById('status-msg').innerText = '笔画顺序或方向不对哦，再试试！';
+                    document.getElementById('character-target-div').classList.add('shake');
+                    setTimeout(() => document.getElementById('character-target-div').classList.remove('shake'), 500);
+                },
+                onCorrectStroke: function(strokeData) {
+                    document.getElementById('status-msg').innerText = '很棒！继续！';
+                },
+                onComplete: function(summaryData) {
+                    console.log('完成概况:', summaryData);
+                    document.getElementById('status-msg').innerText = `太棒了！评分: ${parseInt(summaryData.score * 100)}分！`;
+                    document.getElementById('next-btn').disabled = false;
+                    // 播放成功动画
+                    setTimeout(() => {
+                        writer.animateCharacter({ loop: false });
+                    }, 500);
+                }
+            });
+        }
+
+        // 6. 按钮操作
+        function retryChar() {
+            document.getElementById('status-msg').innerText = '';
+            // 重新开始测验动画
+            startQuiz();
+        }
+
+        function nextChar() {
+            currentCharIndex++;
+            loadCharacter();
+        }
+
+        // 7. 显示完成界面
+        function showFinish() {
+            document.getElementById('target-char-display').innerText = "🎉 本集练习完成！";
+            document.getElementById('character-target-div').innerHTML = '<div style="font-size:5em; line-height:300px;">✅</div>';
+            document.getElementById('retry-btn').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('status-msg').innerText = "真厉害，去选下一集吧！";
+        }
+
+        init();
+    </script>
+</body>
+</html>
