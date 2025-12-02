@@ -3,202 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🦊🐰 疯狂动物城：汉字大冒险 (电影版)</title>
+    <title>🐉 妙笔生花：国风汉字大冒险</title>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;800&family=Zcool+KuaiLe&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Zcool+KuaiLe&family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --theme-color: #004e92;
-            --accent-color: #00c6ff;
-            --text-color: #fff;
-            /* 面板背景稍微透明一点，透出后面的场景 */
-            --panel-bg: rgba(255, 255, 255, 0.85);
-            /* 遮罩层深度，数值越大背景越暗，前景越清晰 */
-            --overlay-opacity: 0.4; 
+            --theme-color: #333;
+            --accent-color: #c0392b;
+            --panel-bg: rgba(255, 255, 255, 0.9);
+            --text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
         body {
-            font-family: 'Baloo 2', 'Zcool KuaiLe', sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #333; /* 图片加载前的底色 */
+            /* 使用更有衬线感的字体 */
+            font-family: 'Noto Serif SC', 'Zcool KuaiLe', serif;
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #333;
         }
 
-        /* --- 沉浸式背景层 (显示电影图片) --- */
-        #bg-image {
+        /* --- 动态背景层 (CSS 动画) --- */
+        #bg-dynamic {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            /* 默认图片，会被JS替换 */
-            background-image: url('https://via.placeholder.com/1920x1080/004e92/ffffff?text=Zootopia+Loading...');
-            background-size: cover; /* 保证图片铺满屏幕 */
-            background-position: center center;
-            z-index: -10;
-            transition: background-image 0.5s ease-in-out; /* 图片切换时的过渡 */
+            z-index: -20; background-size: 400% 400%;
+            transition: opacity 0.8s ease;
         }
 
-        /* --- 背景遮罩层 (让背景变暗，突出前景) --- */
+        /* --- 粒子动画画布层 (Canvas) --- */
+        #particle-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -15; pointer-events: none;
+        }
+
+        /* --- 背景遮罩层 (增加质感) --- */
         #bg-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0, var(--overlay-opacity));
-            z-index: -9;
-            pointer-events: none;
+            /* 叠加一层宣纸纹理或噪点，增加古朴感 */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
+            background-color: rgba(255,255,255, 0.1);
+            z-index: -10; pointer-events: none; mix-blend-mode: overlay;
         }
 
-        /* --- 顶部导航 --- */
+        /* ====== 动态背景风格定义 ====== */
+        /* 1. 水墨风格 */
+        .bg-ink {
+            background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 50%, #9e9e9e 100%);
+            filter: contrast(1.2) grayscale(1);
+            animation: flowInk 20s ease infinite alternate;
+        }
+        @keyframes flowInk { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+        /* 2. 暖阳/节庆风格 */
+        .bg-festive {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        
+        /* 3. 竹林/青绿山水风格 */
+        .bg-nature {
+            background: linear-gradient(to bottom, #d7d2cc 0%, #304352 100%);
+            background: linear-gradient(135deg, #134E5E 0%, #71B280 100%);
+            animation: breatheNature 10s ease-in-out infinite alternate;
+        }
+        @keyframes breatheNature { 0% { filter: brightness(1); } 100% { filter: brightness(1.1) hue-rotate(10deg); } }
+
+        /* 4. 紫气东来风格 */
+        .bg-purple {
+            background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            opacity: 0.8;
+            animation: driftClouds 30s linear infinite;
+        }
+        @keyframes driftClouds { from { background-position: 0 0; } to { background-position: 100% 0; } }
+
+
+        /* --- UI 元素调整 (更古朴) --- */
         .top-bar {
             position: absolute; top: 20px; left: 0; width: 100%;
-            display: flex; justify-content: space-between; padding: 0 20px;
+            display: flex; justify-content: space-between; padding: 0 30px;
             box-sizing: border-box; z-index: 10;
         }
         
         .back-btn {
-            background: rgba(0,0,0,0.5); color: white; padding: 8px 15px;
-            border-radius: 20px; text-decoration: none; font-weight: bold;
-            border: 2px solid rgba(255,255,255,0.4); backdrop-filter: blur(10px);
-            transition: 0.2s;
+            background: rgba(51, 51, 51, 0.8); color: #e0d6c3; padding: 10px 20px;
+            border-radius: 4px; text-decoration: none; font-weight: bold;
+            border: 2px solid #c0392b; /* 中国红边框 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: 0.2s;
         }
-        .back-btn:hover { background: rgba(255,255,255,0.2); }
+        .back-btn:hover { background: #c0392b; color: white; }
 
         .scene-selector {
             background: rgba(255,255,255,0.9); border: 3px solid var(--theme-color); padding: 8px 15px;
-            border-radius: 20px; font-weight: bold; color: var(--theme-color); cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); outline: none;
+            border-radius: 4px; font-weight: bold; color: var(--theme-color); cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); outline: none; font-family: 'Noto Serif SC';
         }
 
-        /* --- 游戏主舞台 --- */
+        /* --- 游戏主舞台 (卷轴/宣纸质感) --- */
         .stage-container {
             position: relative;
             background: var(--panel-bg);
-            /* 增加毛玻璃效果，更有质感 */
-            backdrop-filter: blur(15px); 
-            -webkit-backdrop-filter: blur(15px);
-            padding: 25px;
-            border-radius: 35px;
-            /* 发光边框 */
-            border: 4px solid var(--theme-color);
-            box-shadow: 
-                0 20px 60px rgba(0,0,0,0.6), /* 深重投影 */
-                inset 0 0 20px rgba(255,255,255,0.5); /* 内发光 */
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4c6b0' fill-opacity='0.1'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM32 63c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm57-13c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z'/%3E%3C/g%3E%3C/svg%3E");
+            padding: 30px;
+            border-radius: 8px;
+            /* 双重边框，模拟装裱 */
+            border: 6px double var(--theme-color);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 30px rgba(230, 220, 200, 0.5);
             text-align: center;
-            width: 340px;
+            width: 360px;
             transition: transform 0.3s, border-color 0.5s;
             z-index: 5;
         }
 
         .char-info {
-            font-size: 1.5em; margin-bottom: 15px; color: var(--theme-color); font-weight: 800;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+            font-size: 1.6em; margin-bottom: 20px; color: var(--theme-color); font-weight: bold;
+            text-shadow: var(--text-shadow);
         }
 
         #character-target-div { 
             width: 300px; height: 300px; margin: 0 auto;
-            border: 3px solid var(--theme-color); border-radius: 25px;
-            background: rgba(255,255,255,0.9); cursor: crosshair; position: relative;
+            border: 3px solid var(--theme-color); border-radius: 4px;
+            background: rgba(255,255,255,0.95); cursor: crosshair; position: relative;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
         }
-        /* 米字格 */
+        /* 米字格 (颜色加深) */
         #character-target-div::before, #character-target-div::after {
-            content: ''; position: absolute; background: var(--theme-color); opacity: 0.3;
+            content: ''; position: absolute; background: var(--theme-color); opacity: 0.5;
         }
-        #character-target-div::before { top: 50%; left: 0; width: 100%; height: 2px; }
-        #character-target-div::after { left: 50%; top: 0; height: 100%; width: 2px; }
+        #character-target-div::before { top: 50%; left: 0; width: 100%; height: 1px; }
+        #character-target-div::after { left: 50%; top: 0; height: 100%; width: 1px; }
 
-        /* 按钮组 */
-        .controls { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
+        /* 按钮组 (印章风格) */
+        .controls { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
         .game-btn {
-            padding: 12px 24px; border: none; border-radius: 50px;
-            font-size: 18px; font-weight: bold; color: white; cursor: pointer;
-            font-family: 'Baloo 2'; transition: all 0.2s;
-            box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 15px 20px rgba(0,0,0,0.2);
-            border: 2px solid white;
+            padding: 12px 30px; border: none; border-radius: 4px;
+            font-size: 20px; font-weight: bold; color: #e0d6c3; cursor: pointer;
+            font-family: 'Noto Serif SC'; transition: all 0.2s;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.3);
+            border: 3px solid #e0d6c3; /* 描边 */
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
         }
-        .game-btn:active { transform: translateY(6px); box-shadow: none; }
-        .btn-retry { background: #ff6f00; /* 尼克橙固定 */ }
-        .btn-next { background: var(--theme-color); /* 跟随场景变色 */ }
-        .btn-disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
+        .game-btn:active { transform: translateY(4px); box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .btn-retry { background: #c0392b; /* 中国红 */ }
+        .btn-next { background: var(--theme-color); }
+        .btn-disabled { background: #7f8c8d; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.8; border-color: #bdc3c7;}
 
-        /* --- NPC 互动角色层 --- */
+        /* --- NPC 互动 (印章/祥云) --- */
         .npc-container {
-            position: fixed; bottom: 0; right: -10px;
-            width: auto; height: auto; z-index: 20;
-            pointer-events: none;
+            position: fixed; bottom: 20px; right: 20px;
+            width: auto; height: auto; z-index: 20; pointer-events: none;
         }
-
         .npc-avatar {
-            font-size: 9em; /* Emoji大小 */
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
-            animation: breathe 3s infinite ease-in-out;
-            transform-origin: bottom center;
+            font-size: 8em; 
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4));
+            animation: floatAnim 4s infinite ease-in-out;
+            opacity: 0.9;
         }
         
-        /* 如果你想用真实图片代替Emoji，取消下面注释并设置图片URL */
-        /*
-        .npc-image {
-            height: 300px; width: auto;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
-        }
-        */
-
-        /* 对话气泡 */
+        /* 对话气泡 (卷轴风格) */
         .speech-bubble {
-            position: absolute; bottom: 200px; right: 60px;
-            background: white; padding: 18px 24px; border-radius: 30px 30px 5px 30px;
+            position: absolute; bottom: 180px; right: 80px;
+            background: #fffcf5; padding: 20px 25px; border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            font-size: 17px; font-weight: bold; color: #2c3e50;
-            width: 200px; opacity: 0; transform: scale(0.8) translateY(20px);
+            font-size: 18px; font-weight: bold; color: #5d4037;
+            width: 220px; opacity: 0; transform: scale(0.8) translateY(20px);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: auto; border: 3px solid var(--theme-color);
+            pointer-events: auto; border: 4px double var(--theme-color);
+            font-family: 'Noto Serif SC';
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4c6b0' fill-opacity='0.1'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7z'/%3E%3C/g%3E%3C/svg%3E");
         }
         .speech-bubble.show { opacity: 1; transform: scale(1) translateY(0); }
-        
 
-        /* 动画效果 */
-        @keyframes breathe { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.05) rotate(2deg); } }
-        @keyframes jump { 0% { transform: translateY(0); } 30% { transform: translateY(-40px) scale(1.1); } 100% { transform: translateY(0); } }
-        .jump-anim { animation: jump 0.6s; }
+        @keyframes floatAnim { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
         .shake-anim { animation: shake 0.5s both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-3px, 0, 0); } 20%, 80% { transform: translate3d(6px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-9px, 0, 0); } 40%, 60% { transform: translate3d(9px, 0, 0); } }
-
         @media (max-width: 600px) {
             .stage-container { transform: scale(0.85) translateY(-30px); }
-            .npc-avatar { font-size: 7em; right: 0; }
-            .speech-bubble { bottom: 160px; right: 30px; width: 160px; font-size: 15px; }
+            .npc-avatar { font-size: 6em; right: 0; }
+            .speech-bubble { bottom: 140px; right: 40px; width: 180px; font-size: 16px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="bg-image"></div>
+    <div id="bg-dynamic" class="bg-ink"></div>
+    <canvas id="particle-canvas"></canvas>
     <div id="bg-overlay"></div>
 
     <div class="top-bar">
-        <a href="/" class="back-btn">⬅ 大厅</a>
+        <a href="/" class="back-btn">⬅ 返回大厅</a>
         <div style="display:flex; gap:10px;">
             <select id="episode-select" class="scene-selector" onchange="changeEpisode()">
-                <option>加载中...</option>
+                <option>正在展卷...</option>
             </select>
             <select id="scene-select" class="scene-selector" onchange="manualChangeScene()">
-                <option value="0">🏙️ 市中心</option>
-                <option value="1">🍩 甜甜圈店</option>
-                <option value="2">👮 警局前台</option>
-                <option value="3">❄️ 极地区</option>
-                <option value="4">🍃 雨林区</option>
-                <option value="5">🥕 兔窝镇</option>
-                <option value="6">🐭 啮齿动物城</option>
-                <option value="7">🦥 车管所</option>
-                <option value="8">🎤 演唱会</option>
-                <option value="9">🦁 市长办公室</option>
+                <option value="0">🏔️ 水墨丹青</option>
+                <option value="1">🌸 落英缤纷</option>
+                <option value="2">🎋 竹林清风</option>
+                <option value="3">🏮 大唐盛世</option>
+                <option value="4">🏺 青花瓷韵</option>
+                <option value="5">☁️ 祥云瑞气</option>
+                <option value="6">📜 金榜题名</option>
+                <option value="7">🌙 荷塘月色</option>
+                <option value="8">🍂 秋风落叶</option>
+                <option value="9">🔥 薪火相传</option>
             </select>
         </div>
     </div>
 
     <div class="stage-container">
-        <div id="char-info-display" class="char-info">准备中...</div>
+        <div id="char-info-display" class="char-info">准备提笔...</div>
         <div id="character-target-div"></div>
         <div class="controls">
             <button id="retry-btn" class="game-btn btn-retry" onclick="retryChar()">重写</button>
@@ -207,141 +221,133 @@
     </div>
 
     <div class="npc-container">
-        <div id="npc-bubble" class="speech-bubble">你好呀！我是朱迪警官，准备好开始挑战了吗？</div>
-        <div id="npc-avatar" class="npc-avatar">🐰</div>
+        <div id="npc-bubble" class="speech-bubble">笔墨纸砚已备好，小主人请赐教。</div>
+        <div id="npc-avatar" class="npc-avatar">🐉</div>
     </div>
 
     <script>
-        // =============== 核心配置区 (请替换图片链接) ===============
-        // 提示：你可以去网上找图，或者把图片放到项目的 public/img 目录下，然后用 '/img/city.jpg' 这样的路径
+        // =============== 国风场景配置 ===============
         const SCENES = [
-            {   // 0. 市中心
-                bgImg: 'url("/img/1.png")', 
-                theme: '#004e92', char: '🐰', role: '朱迪',
-                msgs: { start: '我是朱迪！市中心人很多，写字要专心哦！', good: '哇！像破案一样精准！', bad: '别急，我们警察最讲究耐心！', done: '任务完成！你可以加入 ZPD 了！' }
-            },
-            {   // 1. 甜甜圈店
-                bgImg: 'url("【请替换成你的甜甜圈店或尼克图片链接】")', 
-                theme: '#ff6f00', char: '🦊', role: '尼克',
-                msgs: { start: '嘿小家伙，来根冰棍前先写个字看看。', good: '呦，还不赖嘛！狡猾的操作。', bad: '哎呀露馅了，是不是想吃甜甜圈分心了？', done: '干得漂亮！这根爪爪冰棍免费送你。' }
-            },
-            {   // 2. 警局前台
-                bgImg: 'url("【请替换成你的警局前台图片链接】")', 
-                theme: '#005b9f', char: '🐆', role: '豹警官',
-                msgs: { start: '哦天哪！除了甜甜圈，我最爱的就是看人写字！', good: '哇！这个字比我的脸还要圆润可爱！', bad: '哦不，这笔画歪了，像被咬了一口的甜圈。', done: '太帅了！我要在这个字旁边跳个舞庆祝！' }
-            },
-            {   // 3. 极地区
-                bgImg: 'url("【请替换成你的极地区或大先生图片链接】")', 
-                theme: '#2c3e50', char: '🐻‍❄️', role: '大先生',
-                msgs: { start: '这是我的地盘。展示你的尊重，写好它。', good: '这还差不多。有点教父的风范。', bad: '这是对我的不敬吗？冰冻他！(开玩笑的重写)', done: '很好。你现在是我们家族的一员了。' }
-            },
-            {   // 4. 雨林区
-                bgImg: 'url("【请替换成你的雨林区图片链接】")', 
-                theme: '#00695c', char: '🐆', role: '曼查斯',
-                msgs: { start: '雨林里很湿滑，握紧你的笔，小心别掉下去。', good: '行云流水，像藤蔓一样自然生长。', bad: '小心！别滑倒了！这笔画断了。', done: '你征服了这片丛林！是个勇敢的探险家！' }
-            },
-            {   // 5. 兔窝镇
-                bgImg: 'url("【请替换成你的兔窝镇农场图片链接】")', 
-                theme: '#7cb342', char: '🐇', role: '邦尼妈妈',
-                msgs: { start: '乖孩子，种胡萝卜和写字一样，都要勤奋哦。', good: '种得...哦不，写得真好！真整齐！', bad: '没关系宝贝，我们兔子家最不怕失败了，再试一次。', done: '无论你写得怎样，妈妈永远都为你骄傲！' }
-            },
-            {   // 6. 啮齿动物城
-                bgImg: 'url("【请替换成你的小人国图片链接】")', 
-                theme: '#e91e63', char: '🐭', role: '露露',
-                msgs: { start: '别看我小，我对字的要求可是非常精致的！', good: '精致！优雅！完美！就像我的婚纱一样！', bad: '太大了！太粗鲁了！小心别踩坏了花草！', done: '我正式邀请你来参加我的婚礼当花童！' }
-            },
-            {   // 7. 车管所
-                bgImg: 'url("【请替换成你的车管所闪电图片链接】")', 
-                theme: '#546e7a', char: '🦥', role: '闪电',
-                // 闪电说话要有特色
-                msgs: { start: '开......始......写......了......吗......？', good: '写......得......好......快......啊......', bad: '你......这......里......错......了......', done: '哈......哈......哈......哈......' }
-            },
-            {   // 8. 演唱会
-                bgImg: 'url("【请替换成你的夏奇羊演唱会图片链接】")', 
-                theme: '#d500f9', char: '羚', role: '夏奇羊',
-                msgs: { start: '大家一起跳起来！让你的笔尖跟着节奏舞动！', good: '你的字在发光！Try Everything!', bad: '别放弃！再试一次！就像歌里唱的那样！', done: '你是今晚最耀眼的明星！谢谢大家！' }
-            },
-            {   // 9. 市长办公室
-                bgImg: 'url("【请替换成你的市长办公室图片链接】")', 
-                theme: '#bf360c', char: '🦁', role: '狮市长',
-                msgs: { start: '为了动物城的荣耀！市民们，写好这个字！', good: '这就是领袖的风范！非常有气势！', bad: '这可不行，这不符合市政标准！重来！', done: '我宣布，授予你“动物城年度最佳书写员”勋章！' }
-            },
+            { bgClass: 'bg-ink', theme: '#333333', char: '🏔️', particle: 'none', msgs: { start: '水墨晕染，静心凝神。', good: '笔走龙蛇，气韵生动！', bad: '墨色稍乱，需再沉稳。', done: '妙笔生花，自成一派！' } },
+            { bgClass: 'bg-festive', theme: '#c0392b', char: '🌸', particle: 'petals', msgs: { start: '桃之夭夭，灼灼其华。', good: '如花瓣飘落般轻盈！', bad: '笔锋未到，花儿都急了。', done: '字如花开，芬芳满纸！' } },
+            { bgClass: 'bg-nature', theme: '#1b5e20', char: '🎋', particle: 'none', msgs: { start: '胸有成竹，方能下笔。', good: '劲节有力，如竹之挺拔！', bad: '枝叶未展，力度不够。', done: '势如破竹，节节高升！' } },
+            { bgClass: 'bg-festive', theme: '#d35400', char: '🏮', particle: 'lanterns', msgs: { start: '华灯初上，提笔祈福。', good: '字字珠玑，如明灯闪烁！', bad: '灯火阑珊，笔画未明。', done: '福至心灵，前程似锦！' } },
+            { bgClass: 'bg-purple', theme: '#1a237e', char: '🏺', particle: 'none', msgs: { start: '素胚勾勒，笔锋浓转淡。', good: '如青花瓷般精致典雅！', bad: '釉色未匀，还需细细打磨。', done: '传世佳作，温润如玉！' } },
+            { bgClass: 'bg-nature', theme: '#00796b', char: '☁️', particle: 'clouds', msgs: { start: '云卷云舒，自在挥洒。', good: '行云流水，畅通无阻！', bad: '云雾缭绕，迷失方向。', done: '平步青云，直上九霄！' } },
+            { bgClass: 'bg-festive', theme: '#b71c1c', char: '📜', particle: 'none', msgs: { start: '十年寒窗，今朝试锋。', good: '铁画银钩，力透纸背！', bad: '墨迹未干，切勿心急。', done: '金榜题名，独占鳌头！' } },
+            { bgClass: 'bg-ink', theme: '#004d40', char: '🌙', particle: 'petals', msgs: { start: '月色入户，提笔静思。', good: '如月光般皎洁无瑕！', bad: '月影朦胧，笔画不清。', done: '清风明月，字字清心。' } },
+            { bgClass: 'bg-festive', theme: '#e65100', char: '🍂', particle: 'petals', msgs: { start: '一叶知秋，笔下生风。', good: '落笔潇洒，如秋叶静美！', bad: '萧瑟秋风，笔力稍弱。', done: '硕果累累，满纸丰收！' } },
+            { bgClass: 'bg-festive', theme: '#bf360c', char: '🔥', particle: 'lanterns', msgs: { start: '薪火相传，生生不息。', good: '热情似火，笔力刚健！', bad: '火候未到，还需磨练。', done: '炉火纯青，登峰造极！' } },
         ];
+
+        // =============== Canvas 粒子系统 ===============
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let currentParticleType = 'none';
+
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+        class Particle {
+            constructor(type) { this.type = type; this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = this.type === 'lanterns' ? canvas.height + Math.random() * 100 : -Math.random() * 100;
+                this.size = Math.random() * 5 + 3;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = this.type === 'lanterns' ? -Math.random() * 1 - 0.5 : Math.random() * 2 + 1;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 2 - 1;
+                // 颜色配置
+                if(this.type === 'petals') this.color = `hsla(${Math.random()*20 + 340}, 70%, 80%, ${this.opacity})`; // 粉/红
+                else if(this.type === 'lanterns') this.color = `hsla(${Math.random()*30 + 15}, 90%, 60%, ${this.opacity})`; // 橙/黄
+                else if(this.type === 'clouds') this.color = `hsla(200, 20%, 90%, ${this.opacity * 0.5})`; // 白雾
+            }
+            update() {
+                this.x += this.speedX; this.y += this.speedY; this.rotation += this.rotationSpeed;
+                // 边界检查与重置
+                if (this.type === 'lanterns') { if (this.y < -50) this.reset(); } 
+                else { if (this.y > canvas.height + 50) this.reset(); }
+            }
+            draw() {
+                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation * Math.PI / 180); ctx.fillStyle = this.color;
+                if(this.type === 'lanterns') { // 画简易灯笼
+                    ctx.fillRect(-this.size, -this.size*1.5, this.size*2, this.size*3);
+                } else { // 画圆形花瓣/云雾
+                     ctx.beginPath(); ctx.arc(0, 0, this.size, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function initParticles(type) {
+            currentParticleType = type; particles = [];
+            if(type === 'none') return;
+            const count = type === 'clouds' ? 30 : 60;
+            for (let i = 0; i < count; i++) particles.push(new Particle(type));
+        }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if(currentParticleType !== 'none') { particles.forEach(p => { p.update(); p.draw(); }); }
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
 
         // =============== 业务逻辑区 ===============
         const API_URL = '/api/handwriting-data';
-        let episodes = [];
-        let currentEpisodeData = null;
-        let currentCharIndex = 0;
-        let writer = null;
-        let currentSceneIdx = 0;
+        let episodes = []; let currentEpisodeData = null; let currentCharIndex = 0; let writer = null; let currentSceneIdx = 0;
 
         async function init() {
             try {
-                const res = await fetch(API_URL);
-                episodes = await res.json();
-                const select = document.getElementById('episode-select');
-                select.innerHTML = '';
-                if(episodes.length === 0) { select.innerHTML = '<option>暂无数据</option>'; return; }
-                episodes.forEach((ep, index) => {
-                    const opt = document.createElement('option'); opt.value = index; opt.text = ep.title; select.appendChild(opt);
-                });
-                
-                // 随机开始一个场景
-                currentSceneIdx = Math.floor(Math.random() * SCENES.length);
+                const res = await fetch(API_URL); episodes = await res.json();
+                const select = document.getElementById('episode-select'); select.innerHTML = '';
+                if(episodes.length === 0) { select.innerHTML = '<option>暂无书卷</option>'; return; }
+                episodes.forEach((ep, index) => { const opt = document.createElement('option'); opt.value = index; opt.text = ep.title; select.appendChild(opt); });
+                currentSceneIdx = 0; // 默认水墨开场
                 document.getElementById('scene-select').value = currentSceneIdx;
-                applyScene(currentSceneIdx);
-                loadEpisode(0);
+                applyScene(currentSceneIdx); loadEpisode(0);
             } catch(e) { console.error(e); }
         }
 
         function applyScene(idx) {
-            currentSceneIdx = idx;
-            const scene = SCENES[idx];
-            
-            // 1. 切换背景图片
-            document.getElementById('bg-image').style.backgroundImage = scene.bgImg;
-            
-            // 2. 更新主题色变量
+            currentSceneIdx = idx; const scene = SCENES[idx];
+            // 1. 切换动态背景 class
+            const bg = document.getElementById('bg-dynamic');
+            bg.className = scene.bgClass;
+            // 2. 切换粒子效果
+            initParticles(scene.particle);
+            // 3. 更新主题色变量
             document.documentElement.style.setProperty('--theme-color', scene.theme);
-            
-            // 3. 更新角色 (Emoji 或 图片)
-            const avatar = document.getElementById('npc-avatar');
-            avatar.innerText = scene.char; 
-            // 如果你用图片，改成: avatar.innerHTML = `<img src="${scene.charImgUrl}" class="npc-image">`;
-
+            // 4. 更新NPC
+            const avatar = document.getElementById('npc-avatar'); avatar.innerText = scene.char; 
             avatar.classList.remove('jump-anim'); void avatar.offsetWidth; avatar.classList.add('jump-anim');
             showBubble(scene.msgs.start);
         }
 
-        function manualChangeScene() {
-            const idx = document.getElementById('scene-select').value;
-            applyScene(idx);
-        }
-        
+        function manualChangeScene() { const idx = document.getElementById('scene-select').value; applyScene(idx); }
         function changeEpisode() { loadEpisode(document.getElementById('episode-select').value); }
-
-        function loadEpisode(index) {
-            currentEpisodeData = episodes[index]; currentCharIndex = 0; loadCharacter();
-        }
+        function loadEpisode(index) { currentEpisodeData = episodes[index]; currentCharIndex = 0; loadCharacter(); }
 
         function loadCharacter() {
             const scene = SCENES[currentSceneIdx];
             if (!currentEpisodeData || currentCharIndex >= currentEpisodeData.characters.length) { showFinish(); return; }
             const char = currentEpisodeData.characters[currentCharIndex];
-            
             document.getElementById('char-info-display').innerHTML = `
-                <span style="font-size:0.8em; opacity:0.8;">任务:</span> ${char} 
+                <span style="font-size:0.8em; opacity:0.8;">习字:</span> ${char} 
                 <span style="font-size:0.5em; opacity:0.6;">(${currentCharIndex+1}/${currentEpisodeData.characters.length})</span>
             `;
             document.getElementById('character-target-div').innerHTML = '';
-            const nextBtn = document.getElementById('next-btn');
-            nextBtn.disabled = true; nextBtn.classList.add('btn-disabled');
+            const nextBtn = document.getElementById('next-btn'); nextBtn.disabled = true; nextBtn.classList.add('btn-disabled');
 
+            // HanziWriter 配置 (使用毛笔风格颜色)
             writer = HanziWriter.create('character-target-div', char, {
-                width: 300, height: 300, padding: 25, showOutline: true, strokeAnimationSpeed: 1.5, delayBetweenStrokes: 150,
-                strokeColor: '#333', radicalColor: scene.theme, outlineColor: '#ddd', drawingWidth: 25,
-                showHintAfterMisses: 1, highlightOnComplete: true, highlightColor: scene.theme
+                width: 300, height: 300, padding: 30, showOutline: true, strokeAnimationSpeed: 1.2, delayBetweenStrokes: 200,
+                strokeColor: '#2c2c2c', // 近似墨色
+                radicalColor: scene.theme, outlineColor: '#aaaaaa', drawingWidth: 28, // 笔触更粗，像毛笔
+                showHintAfterMisses: 1, highlightOnComplete: true, highlightColor: '#c0392b' // 完成后朱砂红高亮
             });
             
             writer.quiz({
@@ -350,8 +356,7 @@
                 onComplete: () => {
                     showBubble(scene.msgs.done);
                     nextBtn.disabled = false; nextBtn.classList.remove('btn-disabled');
-                    const avatar = document.getElementById('npc-avatar');
-                    avatar.classList.remove('jump-anim'); void avatar.offsetWidth; avatar.classList.add('jump-anim');
+                    const avatar = document.getElementById('npc-avatar'); avatar.classList.remove('jump-anim'); void avatar.offsetWidth; avatar.classList.add('jump-anim');
                     setTimeout(() => writer.animateCharacter(), 500);
                 }
             });
@@ -359,32 +364,18 @@
 
         let bubbleTimer;
         function showBubble(text) {
-            const bubble = document.getElementById('npc-bubble');
-            bubble.innerText = text; bubble.classList.add('show');
+            const bubble = document.getElementById('npc-bubble'); bubble.innerText = text; bubble.classList.add('show');
             clearTimeout(bubbleTimer); bubbleTimer = setTimeout(() => { bubble.classList.remove('show'); }, 3500);
         }
-
-        function shakeScreen() {
-            const stage = document.querySelector('.stage-container');
-            stage.classList.add('shake-anim'); setTimeout(() => stage.classList.remove('shake-anim'), 500);
-        }
-
-        function retryChar() { showBubble('加油！再试一次！'); loadCharacter(); }
-
-        function nextChar() {
-            currentCharIndex++;
-            // 可选：每写一个字随机换场景
-            // const nextScene = Math.floor(Math.random() * SCENES.length);
-            // document.getElementById('scene-select').value = nextScene; applyScene(nextScene);
-            loadCharacter();
-        }
+        function shakeScreen() { const stage = document.querySelector('.stage-container'); stage.classList.add('shake-anim'); setTimeout(() => stage.classList.remove('shake-anim'), 500); }
+        function retryChar() { showBubble('静心凝神，再试一次。'); loadCharacter(); }
+        function nextChar() { currentCharIndex++; loadCharacter(); }
 
         function showFinish() {
-            document.getElementById('char-info-display').innerText = "任务全部完成！";
-            document.getElementById('character-target-div').innerHTML = `<div style="height:100%; display:flex; justify-content:center; align-items:center; font-size:6em;">🎉🏆</div>`;
-            showBubble('太棒了！你真是动物城的骄傲！快去告诉大家！');
+            document.getElementById('char-info-display').innerText = "功德圆满！";
+            document.getElementById('character-target-div').innerHTML = `<div style="height:100%; display:flex; justify-content:center; align-items:center; font-size:6em;">💮</div>`;
+            showBubble('恭喜小主人！此卷修行已完成！');
         }
-
         init();
     </script>
 </body>
