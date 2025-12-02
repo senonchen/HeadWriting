@@ -3,371 +3,386 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🦊🐰 疯狂动物城：汉字大挑战</title>
+    <title>🦊🐰 疯狂动物城：汉字大冒险 (电影版)</title>
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;800&family=Zcool+KuaiLe&display=swap" rel="stylesheet">
     <style>
-        /* --- Zootopia 主题配色变量 --- */
         :root {
-            --zpd-blue: #004e92;     /* 朱迪警服深蓝 */
-            --zpd-light-blue: #0074e4; /* 警徽亮蓝 */
-            --nick-orange: #ff6f00;  /* 尼克胡萝卜橙 */
-            --nick-yellow: #ffca28;  /* 衬衫黄 */
-            --neon-purple: #d500f9;  /* 城市霓虹紫 */
-            --jungle-green: #00c853; /* 雨林区绿 */
-            --text-dark: #2c3e50;
-            --bg-gradient: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); /* 默认背景，建议换成图片 */
+            --theme-color: #004e92;
+            --accent-color: #00c6ff;
+            --text-color: #fff;
+            /* 面板背景稍微透明一点，透出后面的场景 */
+            --panel-bg: rgba(255, 255, 255, 0.85);
+            /* 遮罩层深度，数值越大背景越暗，前景越清晰 */
+            --overlay-opacity: 0.4; 
         }
 
         body {
-            font-family: 'Baloo 2', cursive, sans-serif; /* 使用可爱的字体 */
-            /* 背景：模拟动物城丰富多彩的环境。如果能换成一张真实的动物城背景图效果最好！ */
-            background: var(--bg-gradient); 
-            min-height: 100vh;
+            font-family: 'Baloo 2', 'Zcool KuaiLe', sans-serif;
             margin: 0;
-            padding: 20px;
-            color: var(--text-dark);
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* 添加一个微妙的城市剪影纹理 */
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(255,202,40,0.4) 0%, transparent 40%), /* 尼克区域的光 */
-                radial-gradient(circle at 80% 20%, rgba(0,200,83,0.4) 0%, transparent 40%), /* 雨林区域的光 */
-                linear-gradient(135deg, #2b5876 0%, #4e4376 100%); /* 深色城市基调 */
-            background-attachment: fixed;
+            justify-content: center;
+            background: #333; /* 图片加载前的底色 */
         }
 
-        /* 顶部导航栏 - 模拟警用封条或横幅 */
-        .header-nav {
-            width: 100%;
-            max-width: 650px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-radius: 30px;
-            border: 2px solid rgba(255,255,255,0.3);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .back-link {
-            text-decoration: none;
-            color: white;
-            font-weight: 800;
-            font-size: 1.1em;
-            display: flex;
-            align-items: center;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            transition: 0.3s;
-        }
-        .back-link:hover { transform: translateX(-5px); color: var(--nick-yellow); }
-        .back-link::before { content: '🚔'; margin-right: 8px; font-size: 1.4em; }
-
-        select {
-            padding: 12px 20px;
-            border-radius: 25px;
-            border: 3px solid var(--zpd-light-blue);
-            font-size: 16px;
-            font-weight: bold;
-            background: white;
-            color: var(--zpd-blue);
-            max-width: 60%;
-            cursor: pointer;
-            box-shadow: 0 4px 0 var(--zpd-blue); /* 3D按钮效果 */
-            transition: 0.2s;
-            font-family: 'Baloo 2', sans-serif;
-        }
-        select:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--zpd-blue); }
-        select:active { transform: translateY(4px); box-shadow: none; }
-        
-        /* --- 游戏主界面：ZPD高科技平板 --- */
-        .game-container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 35px;
-            border-radius: 40px;
-            /* 复杂的边框和阴影，模拟发光的设备 */
-            border: 5px solid var(--zpd-light-blue);
-            box-shadow: 
-                0 0 0 8px rgba(0, 116, 228, 0.3), /* 外圈光晕 */
-                0 20px 50px rgba(0,0,0,0.4), /* 整体投影 */
-                inset 0 0 30px rgba(0, 116, 228, 0.1); /* 内发光 */
-            text-align: center;
-            width: 100%;
-            max-width: 550px;
-            position: relative;
-            overflow: hidden;
+        /* --- 沉浸式背景层 (显示电影图片) --- */
+        #bg-image {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            /* 默认图片，会被JS替换 */
+            background-image: url('https://via.placeholder.com/1920x1080/004e92/ffffff?text=Zootopia+Loading...');
+            background-size: cover; /* 保证图片铺满屏幕 */
+            background-position: center center;
+            z-index: -10;
+            transition: background-image 0.5s ease-in-out; /* 图片切换时的过渡 */
         }
 
-        /* 装饰：角落的警徽图案 */
-        .game-container::after {
-            content: '🛡️ZPD';
-            position: absolute;
-            bottom: 10px;
-            right: 15px;
-            font-size: 3em;
-            opacity: 0.1;
-            font-weight: 900;
-            color: var(--zpd-blue);
-            transform: rotate(-15deg);
+        /* --- 背景遮罩层 (让背景变暗，突出前景) --- */
+        #bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0, var(--overlay-opacity));
+            z-index: -9;
             pointer-events: none;
         }
 
-        #target-char-display {
-            font-size: 2.2em;
-            margin-bottom: 20px;
-            color: var(--zpd-blue);
-            font-weight: 800;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        /* --- 顶部导航 --- */
+        .top-bar {
+            position: absolute; top: 20px; left: 0; width: 100%;
+            display: flex; justify-content: space-between; padding: 0 20px;
+            box-sizing: border-box; z-index: 10;
         }
         
-        /* 汉字书写格区域 - 模拟全息显示屏 */
-        #character-target-div { 
-            width: 300px; height: 300px; margin: 0 auto 35px auto; 
-            /* 边框改为发光的科技感边框 */
-            border: 4px solid var(--neon-purple);
-            border-radius: 25px;
-            /* 背景改为带有科技感的网格 */
-            background-color: rgba(255,255,255,0.8);
-            background-image: 
-                linear-gradient(rgba(213, 0, 249, 0.1) 2px, transparent 2px),
-                linear-gradient(90deg, rgba(213, 0, 249, 0.1) 2px, transparent 2px);
-            background-size: 30px 30px; /* 网格大小 */
-            box-shadow: 
-                inset 0 0 20px rgba(213, 0, 249, 0.2),
-                0 0 15px rgba(213, 0, 249, 0.4);
-            cursor: crosshair;
-            position: relative;
-        }
-        /* 米字格辅助线改为虚线发光效果 */
-        #character-target-div::before, #character-target-div::after {
-            content: ''; position: absolute; background: var(--neon-purple); opacity: 0.3;
-        }
-        #character-target-div::before { top: 50%; left: 0; width: 100%; height: 2px; box-shadow: 0 0 5px var(--neon-purple); }
-        #character-target-div::after { left: 50%; top: 0; height: 100%; width: 2px; box-shadow: 0 0 5px var(--neon-purple); }
-
-
-        /* --- 按钮组：3D卡通风格 --- */
-        .controls { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
-        
-        button {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 50px; /* 圆滚滚的按钮 */
-            font-size: 20px;
-            font-weight: 800;
-            cursor: pointer;
+        .back-btn {
+            background: rgba(0,0,0,0.5); color: white; padding: 8px 15px;
+            border-radius: 20px; text-decoration: none; font-weight: bold;
+            border: 2px solid rgba(255,255,255,0.4); backdrop-filter: blur(10px);
             transition: 0.2s;
-            font-family: 'Baloo 2', sans-serif;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+
+        .scene-selector {
+            background: rgba(255,255,255,0.9); border: 3px solid var(--theme-color); padding: 8px 15px;
+            border-radius: 20px; font-weight: bold; color: var(--theme-color); cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); outline: none;
+        }
+
+        /* --- 游戏主舞台 --- */
+        .stage-container {
             position: relative;
-            overflow: hidden;
-            display: flex; align-items: center; gap: 10px;
+            background: var(--panel-bg);
+            /* 增加毛玻璃效果，更有质感 */
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px);
+            padding: 25px;
+            border-radius: 35px;
+            /* 发光边框 */
+            border: 4px solid var(--theme-color);
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.6), /* 深重投影 */
+                inset 0 0 20px rgba(255,255,255,0.5); /* 内发光 */
+            text-align: center;
+            width: 340px;
+            transition: transform 0.3s, border-color 0.5s;
+            z-index: 5;
         }
 
-        /* 重写按钮 - 尼克风格 (胡萝卜色) */
-        #retry-btn {
-            background: var(--nick-orange);
-            color: white;
-            box-shadow: 0 6px 0 #c45500, 0 15px 20px rgba(0,0,0,0.2); /* 3D厚度和阴影 */
+        .char-info {
+            font-size: 1.5em; margin-bottom: 15px; color: var(--theme-color); font-weight: 800;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
         }
-        #retry-btn::before { content: '🦊'; font-size: 1.2em; }
 
-        /* 下一字按钮 - 朱迪风格 (警服蓝色) */
-        #next-btn {
-            background: var(--zpd-light-blue);
-            color: white;
-            box-shadow: 0 6px 0 var(--zpd-blue), 0 15px 20px rgba(0,0,0,0.2);
+        #character-target-div { 
+            width: 300px; height: 300px; margin: 0 auto;
+            border: 3px solid var(--theme-color); border-radius: 25px;
+            background: rgba(255,255,255,0.9); cursor: crosshair; position: relative;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
         }
-        #next-btn::before { content: '🐰'; font-size: 1.2em; }
+        /* 米字格 */
+        #character-target-div::before, #character-target-div::after {
+            content: ''; position: absolute; background: var(--theme-color); opacity: 0.3;
+        }
+        #character-target-div::before { top: 50%; left: 0; width: 100%; height: 2px; }
+        #character-target-div::after { left: 50%; top: 0; height: 100%; width: 2px; }
 
-        /* 按钮按下效果 */
-        button:hover { transform: translateY(-3px); box-shadow: 0 8px 0 rgba(0,0,0,0.2), 0 20px 30px rgba(0,0,0,0.3); }
-        button:active { transform: translateY(6px) !important; box-shadow: none !important; } /* 按下去 */
+        /* 按钮组 */
+        .controls { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
+        .game-btn {
+            padding: 12px 24px; border: none; border-radius: 50px;
+            font-size: 18px; font-weight: bold; color: white; cursor: pointer;
+            font-family: 'Baloo 2'; transition: all 0.2s;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 15px 20px rgba(0,0,0,0.2);
+            border: 2px solid white;
+        }
+        .game-btn:active { transform: translateY(6px); box-shadow: none; }
+        .btn-retry { background: #ff6f00; /* 尼克橙固定 */ }
+        .btn-next { background: var(--theme-color); /* 跟随场景变色 */ }
+        .btn-disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
+
+        /* --- NPC 互动角色层 --- */
+        .npc-container {
+            position: fixed; bottom: 0; right: -10px;
+            width: auto; height: auto; z-index: 20;
+            pointer-events: none;
+        }
+
+        .npc-avatar {
+            font-size: 9em; /* Emoji大小 */
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+            animation: breathe 3s infinite ease-in-out;
+            transform-origin: bottom center;
+        }
         
-        button:disabled {
-            background: #bdc3c7;
-            color: #7f8c8d;
-            box-shadow: 0 6px 0 #95a5a6;
-            cursor: not-allowed;
-            transform: none !important;
-            opacity: 0.8;
+        /* 如果你想用真实图片代替Emoji，取消下面注释并设置图片URL */
+        /*
+        .npc-image {
+            height: 300px; width: auto;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
         }
+        */
 
-        /* 状态提示消息 */
-        #status-msg {
-            min-height: 40px; margin-top: 20px; font-weight: 800; font-size: 1.2em;
-            padding: 5px 15px; border-radius: 20px; display: inline-block;
+        /* 对话气泡 */
+        .speech-bubble {
+            position: absolute; bottom: 200px; right: 60px;
+            background: white; padding: 18px 24px; border-radius: 30px 30px 5px 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            font-size: 17px; font-weight: bold; color: #2c3e50;
+            width: 200px; opacity: 0; transform: scale(0.8) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto; border: 3px solid var(--theme-color);
         }
-        .msg-success { color: var(--jungle-green); background: rgba(0, 200, 83, 0.1); border: 2px solid var(--jungle-green); }
-        .msg-error { color: var(--nick-orange); background: rgba(255, 111, 0, 0.1); border: 2px solid var(--nick-orange); }
-
-        /* 动画 */
-        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
+        .speech-bubble.show { opacity: 1; transform: scale(1) translateY(0); }
         
-        /* 胜利动画 */
-        @keyframes celebratePop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
-        .celebrate { animation: celebratePop 0.6s ease-out; }
+
+        /* 动画效果 */
+        @keyframes breathe { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.05) rotate(2deg); } }
+        @keyframes jump { 0% { transform: translateY(0); } 30% { transform: translateY(-40px) scale(1.1); } 100% { transform: translateY(0); } }
+        .jump-anim { animation: jump 0.6s; }
+        .shake-anim { animation: shake 0.5s both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-3px, 0, 0); } 20%, 80% { transform: translate3d(6px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-9px, 0, 0); } 40%, 60% { transform: translate3d(9px, 0, 0); } }
+
+        @media (max-width: 600px) {
+            .stage-container { transform: scale(0.85) translateY(-30px); }
+            .npc-avatar { font-size: 7em; right: 0; }
+            .speech-bubble { bottom: 160px; right: 30px; width: 160px; font-size: 15px; }
+        }
     </style>
 </head>
 <body>
-    <div class="header-nav">
-        <a href="/" class="back-link">回到大厅</a>
-        <select id="episode-select" onchange="changeEpisode()">
-            <option value="">正在连接 ZPD 数据库...</option>
-        </select>
-    </div>
 
-    <div class="game-container">
-        <div id="target-char-display">准备开始挑战！</div>
-        
-        <div id="character-target-div">
-            </div>
-        
-        <div id="status-msg"></div>
+    <div id="bg-image"></div>
+    <div id="bg-overlay"></div>
 
-        <div class="controls">
-            <button id="retry-btn" onclick="retryChar()">重写</button>
-            <button id="next-btn" onclick="nextChar()" disabled>下一字</button>
+    <div class="top-bar">
+        <a href="/" class="back-btn">⬅ 大厅</a>
+        <div style="display:flex; gap:10px;">
+            <select id="episode-select" class="scene-selector" onchange="changeEpisode()">
+                <option>加载中...</option>
+            </select>
+            <select id="scene-select" class="scene-selector" onchange="manualChangeScene()">
+                <option value="0">🏙️ 市中心</option>
+                <option value="1">🍩 甜甜圈店</option>
+                <option value="2">👮 警局前台</option>
+                <option value="3">❄️ 极地区</option>
+                <option value="4">🍃 雨林区</option>
+                <option value="5">🥕 兔窝镇</option>
+                <option value="6">🐭 啮齿动物城</option>
+                <option value="7">🦥 车管所</option>
+                <option value="8">🎤 演唱会</option>
+                <option value="9">🦁 市长办公室</option>
+            </select>
         </div>
     </div>
 
+    <div class="stage-container">
+        <div id="char-info-display" class="char-info">准备中...</div>
+        <div id="character-target-div"></div>
+        <div class="controls">
+            <button id="retry-btn" class="game-btn btn-retry" onclick="retryChar()">重写</button>
+            <button id="next-btn" class="game-btn btn-next" onclick="nextChar()" disabled>下一字</button>
+        </div>
+    </div>
+
+    <div class="npc-container">
+        <div id="npc-bubble" class="speech-bubble">你好呀！我是朱迪警官，准备好开始挑战了吗？</div>
+        <div id="npc-avatar" class="npc-avatar">🐰</div>
+    </div>
+
     <script>
+        // =============== 核心配置区 (请替换图片链接) ===============
+        // 提示：你可以去网上找图，或者把图片放到项目的 public/img 目录下，然后用 '/img/city.jpg' 这样的路径
+        const SCENES = [
+            {   // 0. 市中心
+                bgImg: 'url("/img/1.png")', 
+                theme: '#004e92', char: '🐰', role: '朱迪',
+                msgs: { start: '我是朱迪！市中心人很多，写字要专心哦！', good: '哇！像破案一样精准！', bad: '别急，我们警察最讲究耐心！', done: '任务完成！你可以加入 ZPD 了！' }
+            },
+            {   // 1. 甜甜圈店
+                bgImg: 'url("【请替换成你的甜甜圈店或尼克图片链接】")', 
+                theme: '#ff6f00', char: '🦊', role: '尼克',
+                msgs: { start: '嘿小家伙，来根冰棍前先写个字看看。', good: '呦，还不赖嘛！狡猾的操作。', bad: '哎呀露馅了，是不是想吃甜甜圈分心了？', done: '干得漂亮！这根爪爪冰棍免费送你。' }
+            },
+            {   // 2. 警局前台
+                bgImg: 'url("【请替换成你的警局前台图片链接】")', 
+                theme: '#005b9f', char: '🐆', role: '豹警官',
+                msgs: { start: '哦天哪！除了甜甜圈，我最爱的就是看人写字！', good: '哇！这个字比我的脸还要圆润可爱！', bad: '哦不，这笔画歪了，像被咬了一口的甜圈。', done: '太帅了！我要在这个字旁边跳个舞庆祝！' }
+            },
+            {   // 3. 极地区
+                bgImg: 'url("【请替换成你的极地区或大先生图片链接】")', 
+                theme: '#2c3e50', char: '🐻‍❄️', role: '大先生',
+                msgs: { start: '这是我的地盘。展示你的尊重，写好它。', good: '这还差不多。有点教父的风范。', bad: '这是对我的不敬吗？冰冻他！(开玩笑的重写)', done: '很好。你现在是我们家族的一员了。' }
+            },
+            {   // 4. 雨林区
+                bgImg: 'url("【请替换成你的雨林区图片链接】")', 
+                theme: '#00695c', char: '🐆', role: '曼查斯',
+                msgs: { start: '雨林里很湿滑，握紧你的笔，小心别掉下去。', good: '行云流水，像藤蔓一样自然生长。', bad: '小心！别滑倒了！这笔画断了。', done: '你征服了这片丛林！是个勇敢的探险家！' }
+            },
+            {   // 5. 兔窝镇
+                bgImg: 'url("【请替换成你的兔窝镇农场图片链接】")', 
+                theme: '#7cb342', char: '🐇', role: '邦尼妈妈',
+                msgs: { start: '乖孩子，种胡萝卜和写字一样，都要勤奋哦。', good: '种得...哦不，写得真好！真整齐！', bad: '没关系宝贝，我们兔子家最不怕失败了，再试一次。', done: '无论你写得怎样，妈妈永远都为你骄傲！' }
+            },
+            {   // 6. 啮齿动物城
+                bgImg: 'url("【请替换成你的小人国图片链接】")', 
+                theme: '#e91e63', char: '🐭', role: '露露',
+                msgs: { start: '别看我小，我对字的要求可是非常精致的！', good: '精致！优雅！完美！就像我的婚纱一样！', bad: '太大了！太粗鲁了！小心别踩坏了花草！', done: '我正式邀请你来参加我的婚礼当花童！' }
+            },
+            {   // 7. 车管所
+                bgImg: 'url("【请替换成你的车管所闪电图片链接】")', 
+                theme: '#546e7a', char: '🦥', role: '闪电',
+                // 闪电说话要有特色
+                msgs: { start: '开......始......写......了......吗......？', good: '写......得......好......快......啊......', bad: '你......这......里......错......了......', done: '哈......哈......哈......哈......' }
+            },
+            {   // 8. 演唱会
+                bgImg: 'url("【请替换成你的夏奇羊演唱会图片链接】")', 
+                theme: '#d500f9', char: '羚', role: '夏奇羊',
+                msgs: { start: '大家一起跳起来！让你的笔尖跟着节奏舞动！', good: '你的字在发光！Try Everything!', bad: '别放弃！再试一次！就像歌里唱的那样！', done: '你是今晚最耀眼的明星！谢谢大家！' }
+            },
+            {   // 9. 市长办公室
+                bgImg: 'url("【请替换成你的市长办公室图片链接】")', 
+                theme: '#bf360c', char: '🦁', role: '狮市长',
+                msgs: { start: '为了动物城的荣耀！市民们，写好这个字！', good: '这就是领袖的风范！非常有气势！', bad: '这可不行，这不符合市政标准！重来！', done: '我宣布，授予你“动物城年度最佳书写员”勋章！' }
+            },
+        ];
+
+        // =============== 业务逻辑区 ===============
         const API_URL = '/api/handwriting-data';
         let episodes = [];
         let currentEpisodeData = null;
         let currentCharIndex = 0;
         let writer = null;
+        let currentSceneIdx = 0;
 
-        // 音效 (可选，增加趣味性)
-        // const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        // function playTone(type) { /* ... 可以加上之前的音效代码 ... */ }
-
-        // 1. 初始化
         async function init() {
-            const res = await fetch(API_URL);
-            episodes = await res.json();
-            const select = document.getElementById('episode-select');
-            select.innerHTML = '';
-            if (episodes.length === 0) {
-                 select.innerHTML = '<option>暂无任务，请去后台添加</option>';
-                 document.getElementById('target-char-display').innerText = "还没有任务哦！";
-                 return;
-            }
-            episodes.forEach((ep, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `📜 ${ep.title}`; // 加个emoji图标
-                select.appendChild(option);
-            });
-            loadEpisode(0);
+            try {
+                const res = await fetch(API_URL);
+                episodes = await res.json();
+                const select = document.getElementById('episode-select');
+                select.innerHTML = '';
+                if(episodes.length === 0) { select.innerHTML = '<option>暂无数据</option>'; return; }
+                episodes.forEach((ep, index) => {
+                    const opt = document.createElement('option'); opt.value = index; opt.text = ep.title; select.appendChild(opt);
+                });
+                
+                // 随机开始一个场景
+                currentSceneIdx = Math.floor(Math.random() * SCENES.length);
+                document.getElementById('scene-select').value = currentSceneIdx;
+                applyScene(currentSceneIdx);
+                loadEpisode(0);
+            } catch(e) { console.error(e); }
         }
 
-        // 2. 切换集数
-        function changeEpisode() {
-            const index = document.getElementById('episode-select').value;
-            loadEpisode(index);
-        }
-
-        // 3. 加载集数
-        function loadEpisode(index) {
-            currentEpisodeData = episodes[index];
-            currentCharIndex = 0;
-            loadCharacter();
-            document.getElementById('next-btn').disabled = true;
-            setStatus('', '');
-        }
-
-        // 4. 加载汉字
-        function loadCharacter() {
-            const charDiv = document.getElementById('character-target-div');
-            charDiv.innerHTML = ''; // 清空
-            charDiv.classList.remove('celebrate'); // 移除庆祝动画
-
-            if (!currentEpisodeData || currentCharIndex >= currentEpisodeData.characters.length) {
-                showFinish();
-                return;
-            }
+        function applyScene(idx) {
+            currentSceneIdx = idx;
+            const scene = SCENES[idx];
             
-            const char = currentEpisodeData.characters[currentCharIndex];
-            document.getElementById('target-char-display').innerHTML = `当前任务：<span style="color:var(--nick-orange); font-size:1.2em;">${char}</span> <span style="font-size:0.6em;opacity:0.7;">(${currentCharIndex + 1}/${currentEpisodeData.characters.length})</span>`;
-            setStatus('请在下方屏幕书写，注意笔顺哦！', '');
-            document.getElementById('next-btn').disabled = true;
+            // 1. 切换背景图片
+            document.getElementById('bg-image').style.backgroundImage = scene.bgImg;
+            
+            // 2. 更新主题色变量
+            document.documentElement.style.setProperty('--theme-color', scene.theme);
+            
+            // 3. 更新角色 (Emoji 或 图片)
+            const avatar = document.getElementById('npc-avatar');
+            avatar.innerText = scene.char; 
+            // 如果你用图片，改成: avatar.innerHTML = `<img src="${scene.charImgUrl}" class="npc-image">`;
 
-            // --- Hanzi Writer 配置 (颜色调整为主题色) ---
-            writer = HanziWriter.create('character-target-div', char, {
-                width: 300, height: 300, padding: 25,
-                showOutline: true,
-                strokeAnimationSpeed: 1.5, // 稍微快一点
-                delayBetweenStrokes: 150,
-                strokeColor: '#2c3e50',   // 书写颜色：深色
-                radicalColor: '#ff6f00',  // 部首颜色：尼克橙
-                outlineColor: '#d500f966', // 轮廓颜色：半透明霓虹紫
-                drawingWidth: 25, // 笔触更粗一点，像记号笔
-                showHintAfterMisses: 1,
-                highlightOnComplete: true,
-                highlightColor: '#00c853' // 完成高亮：雨林绿
-            });
-            startQuiz();
+            avatar.classList.remove('jump-anim'); void avatar.offsetWidth; avatar.classList.add('jump-anim');
+            showBubble(scene.msgs.start);
         }
 
-        // 5. 开始测验
-        function startQuiz() {
+        function manualChangeScene() {
+            const idx = document.getElementById('scene-select').value;
+            applyScene(idx);
+        }
+        
+        function changeEpisode() { loadEpisode(document.getElementById('episode-select').value); }
+
+        function loadEpisode(index) {
+            currentEpisodeData = episodes[index]; currentCharIndex = 0; loadCharacter();
+        }
+
+        function loadCharacter() {
+            const scene = SCENES[currentSceneIdx];
+            if (!currentEpisodeData || currentCharIndex >= currentEpisodeData.characters.length) { showFinish(); return; }
+            const char = currentEpisodeData.characters[currentCharIndex];
+            
+            document.getElementById('char-info-display').innerHTML = `
+                <span style="font-size:0.8em; opacity:0.8;">任务:</span> ${char} 
+                <span style="font-size:0.5em; opacity:0.6;">(${currentCharIndex+1}/${currentEpisodeData.characters.length})</span>
+            `;
+            document.getElementById('character-target-div').innerHTML = '';
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = true; nextBtn.classList.add('btn-disabled');
+
+            writer = HanziWriter.create('character-target-div', char, {
+                width: 300, height: 300, padding: 25, showOutline: true, strokeAnimationSpeed: 1.5, delayBetweenStrokes: 150,
+                strokeColor: '#333', radicalColor: scene.theme, outlineColor: '#ddd', drawingWidth: 25,
+                showHintAfterMisses: 1, highlightOnComplete: true, highlightColor: scene.theme
+            });
+            
             writer.quiz({
-                onMistake: function() {
-                    setStatus('哎呀，笔顺错了！再试一次！', 'error');
-                    document.getElementById('character-target-div').classList.add('shake');
-                    // playTone('error'); // 播放音效
-                    setTimeout(() => document.getElementById('character-target-div').classList.remove('shake'), 500);
-                },
-                onCorrectStroke: function() {
-                    setStatus('很好，继续！', 'success');
-                    // playTone('normal');
-                },
-                onComplete: function(summaryData) {
-                    const score = parseInt(summaryData.score * 100);
-                    let praise = score >= 90 ? "太棒了！简直完美！🎉" : (score >= 80 ? "很不错！继续保持！👍" : "完成了！加油练得更好！💪");
-                    setStatus(`${praise} (评分: ${score})`, 'success');
-                    document.getElementById('next-btn').disabled = false;
-                    // playTone('success');
-                    // 播放动画
-                    setTimeout(() => {
-                        writer.animateCharacter({ loop: false });
-                    }, 500);
+                onMistake: () => { showBubble(scene.msgs.bad); shakeScreen(); },
+                onCorrectStroke: () => { if(Math.random() > 0.7) showBubble(scene.msgs.good); },
+                onComplete: () => {
+                    showBubble(scene.msgs.done);
+                    nextBtn.disabled = false; nextBtn.classList.remove('btn-disabled');
+                    const avatar = document.getElementById('npc-avatar');
+                    avatar.classList.remove('jump-anim'); void avatar.offsetWidth; avatar.classList.add('jump-anim');
+                    setTimeout(() => writer.animateCharacter(), 500);
                 }
             });
         }
 
-        // 辅助函数：设置状态文字
-        function setStatus(msg, type) {
-            const el = document.getElementById('status-msg');
-            el.innerText = msg;
-            el.className = type ? `msg-${type}` : '';
+        let bubbleTimer;
+        function showBubble(text) {
+            const bubble = document.getElementById('npc-bubble');
+            bubble.innerText = text; bubble.classList.add('show');
+            clearTimeout(bubbleTimer); bubbleTimer = setTimeout(() => { bubble.classList.remove('show'); }, 3500);
         }
 
-        // 6. 按钮操作
-        function retryChar() {
-            setStatus('重新开始，这次一定行！', '');
-            startQuiz();
+        function shakeScreen() {
+            const stage = document.querySelector('.stage-container');
+            stage.classList.add('shake-anim'); setTimeout(() => stage.classList.remove('shake-anim'), 500);
         }
+
+        function retryChar() { showBubble('加油！再试一次！'); loadCharacter(); }
 
         function nextChar() {
             currentCharIndex++;
+            // 可选：每写一个字随机换场景
+            // const nextScene = Math.floor(Math.random() * SCENES.length);
+            // document.getElementById('scene-select').value = nextScene; applyScene(nextScene);
             loadCharacter();
         }
 
-        // 7. 完成界面
         function showFinish() {
-            document.getElementById('target-char-display').innerText = "🎉 恭喜！本集任务全部完成！";
-            const charDiv = document.getElementById('character-target-div');
-            charDiv.innerHTML = '<div style="font-size:8em; line-height:300px;">🏆</div>';
-            charDiv.classList.add('celebrate');
-            document.getElementById('retry-btn').style.display = 'none';
-            document.getElementById('next-btn').style.display = 'none';
-            setStatus("你真是个写字小天才！快去大厅看看其他挑战吧！", 'success');
+            document.getElementById('char-info-display').innerText = "任务全部完成！";
+            document.getElementById('character-target-div').innerHTML = `<div style="height:100%; display:flex; justify-content:center; align-items:center; font-size:6em;">🎉🏆</div>`;
+            showBubble('太棒了！你真是动物城的骄傲！快去告诉大家！');
         }
 
         init();
